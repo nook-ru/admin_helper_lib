@@ -1,5 +1,7 @@
 # digitalwand/admin_helper_lib
 
+![travis-ci](https://travis-ci.org/nook-ru/admin_helper_lib.svg?branch=2.x-lib-fixes)
+
 API для сборки кастомных админок в Битриксе.
 
 Standalone-версия в виде библиотеки, предназначена для использования в собственных модулях. Роутинг должен обеспечиваться средствами модуля-клиента, для примера, см. [admin/route.php](https://github.com/DigitalWand/digitalwand.admin_helper/blob/2.x/admin/route.php) из полной версии. 
