@@ -255,9 +255,12 @@ abstract class AdminListHelper extends AdminBaseHelper
 		}
 
 		// Получаем параметры навигации
-		$navUniqSettings = array('sNavID' => $this->getListTableID());
+		$navUniqSettings = array(
+			'nPageSize' => 20,
+			'sNavID' => $this->getListTableID()
+		);
 		$this->navParams = array(
-			'nPageSize' => \CAdminResult::GetNavSize($this->getListTableID()),
+			'nPageSize' => \CAdminResult::GetNavSize($this->getListTableID(), $navUniqSettings),
 			'navParams' => \CAdminResult::GetNavParams($navUniqSettings)
 		);
 	}
@@ -426,38 +429,38 @@ abstract class AdminListHelper extends AdminBaseHelper
 	protected function getContextMenu()
 	{
 		$contextMenu = array();
+		/** @var AdminSectionEditHelper $sectionEditHelper */
 		$sectionEditHelper = static::getHelperClass(AdminSectionEditHelper::className());
 		if ($sectionEditHelper) {
-			$this->additionalUrlParams['SECTION_ID'] = $_GET['ID'];
+			$sectionId = $_GET['SECTION_ID'] ?: $_GET['ID'] ?: null;
+			$this->additionalUrlParams['SECTION_ID'] = $sectionId = $sectionId > 0 ? (int)$sectionId : null;
 		}
 
 		/**
 		 * Если задан для разделов добавляем кнопку создать раздел и
 		 * кнопку на уровень вверх если это не корневой раздел
 		 */
-		if ($sectionEditHelper && isset($_GET['ID'])) {
-			if ($_GET['ID']) {
-				$params = $this->additionalUrlParams;
-				$sectionModel = $sectionEditHelper::getModel();
-				$sectionField = $sectionEditHelper::getSectionField();
-				$section = $sectionModel::getById(
-					$this->getCommonPrimaryFilterById($sectionModel, null, $_GET['ID'])
-				)->Fetch();
-				if ($this->isPopup()) {
-					$params = array_merge($_GET);
-				}
-				if ($section[$sectionField]) {
-					$params['ID'] = $section[$sectionField];
-				}
-				else {
-					unset($params['ID']);
-				}
-				unset($params['SECTION_ID']);
-				$contextMenu[] = $this->getButton('LIST_SECTION_UP', array(
-					'LINK' => static::getUrl($params),
-					'ICON' => 'btn_list'
-				));
+		if (isset($sectionId)) {
+			$params = $this->additionalUrlParams;
+			$sectionModel = $sectionEditHelper::getModel();
+			$sectionField = $sectionEditHelper::getSectionField();
+			$section = $sectionModel::getById(
+				$this->getCommonPrimaryFilterById($sectionModel, null, $sectionId)
+			)->Fetch();
+			if ($this->isPopup()) {
+				$params = array_merge($_GET);
 			}
+			if ($section[$sectionField]) {
+				$params['ID'] = $section[$sectionField];
+			}
+			else {
+				unset($params['ID']);
+			}
+			unset($params['SECTION_ID']);
+			$contextMenu[] = $this->getButton('LIST_SECTION_UP', array(
+				'LINK' => static::getUrl($params),
+				'ICON' => 'btn_list'
+			));
 		}
 
 		/**
@@ -568,9 +571,10 @@ abstract class AdminListHelper extends AdminBaseHelper
 
 				foreach ($IDs as $id) {
 					$model = $className;
-					if (strpos($id[$this->pk()], 's') === 0) {
+					$id = $complexPrimaryKey ? $id[$this->pk()] : $id;
+					if (strpos($id, 's') === 0) {
 						$model = $sectionClassName;
-						$id[$this->pk()] = substr($id[$this->pk()], 1);
+						$id = substr($id, 1);
 					}
 					/** @var EntityManager $entityManager */
 					$entityManager = new static::$entityManager($model, empty($this->data) ? array() : $this->data, $id,
@@ -799,7 +803,7 @@ abstract class AdminListHelper extends AdminBaseHelper
 						if (!$elementHeader['default'] && $sectionHeader['default']) {
 							$headers[$i] = $sectionHeader;
 						} else {
-							$found = true;	
+							$found = true;
 						}
 						break;
 					}
@@ -1150,6 +1154,16 @@ abstract class AdminListHelper extends AdminBaseHelper
 			}
 		}
 
+		/**
+		 * Вернем результат с первой страницы если на текущей нет элементов.
+		 * Для списка элементов аналогичная проверка есть в $this->getLimits()
+		 */
+		if (!count($returnData) && $this->totalRowsCount > 0)
+		{
+			$this->navParams['navParams']['PAGEN'] = 1;
+			return $this->getMixedData($sectionsVisibleColumns, $elementVisibleColumns, $sort, $raw);
+		}
+
 		return $returnData;
 	}
 
@@ -1167,6 +1181,18 @@ abstract class AdminListHelper extends AdminBaseHelper
 				$this->navParams['navParams']['PAGEN'] = 1;
 			}
 			$from = $this->navParams['nPageSize'] * ((int)$this->navParams['navParams']['PAGEN'] - 1);
+
+			/**
+			 * Вернем результат с первой страницы если на текущей нет элементов.
+			 *
+			 * $this->totalRowsCount еще не заполнен при смешанном отображении элементов и разделов,
+			 * в $this->>getMixedData() есть отдельная проверка на этот счет
+			 */
+			if ($this->totalRowsCount && $from >= $this->totalRowsCount)
+			{
+				$this->navParams['navParams']['PAGEN'] = 1;
+				$from = 0;
+			}
 
 			return array($from, $this->navParams['nPageSize']);
 		}
