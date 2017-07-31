@@ -306,6 +306,21 @@ class FileWidget extends HelperWidget
             $path = $_FILES['FIELDS']['tmp_name'][$this->code . '_FILE'];
             $type = $_FILES['FIELDS']['type'][$this->code . '_FILE'];
 
+	        /**
+	         * На свежих версиях главного модуля tmp_name содержит путь относительно папки с временными файлами.
+	         * В старых версиях -- путь относительно корня сайта.
+	         *
+	         * @see \CIBlock::makeFileArrayFromArray
+	         */
+            $io = \CBXVirtualIo::GetInstance();
+	        $absPath = $io->CombinePath(\CTempFile::GetAbsoluteRoot(), $path);
+	        $tmpPath = \CTempFile::GetAbsoluteRoot()."/";
+	        if (strpos($absPath, $tmpPath) === 0 && $io->FileExists($absPath) ||
+		        ($absPath = $io->CombinePath($_SERVER["DOCUMENT_ROOT"], $path)) && strpos($absPath, $tmpPath) === 0)
+	        {
+		        $path = $io->CombinePath("/", substr($absPath, strlen($_SERVER["DOCUMENT_ROOT"])));
+	        }
+
             $this->saveFile($name, $path, $type, $description);
         }
         parent::processEditAction();
