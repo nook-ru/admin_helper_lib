@@ -216,4 +216,14 @@ class StringWidget extends HelperWidget
             print '</tr>';
         }
     }
+
+    public function changeGetListOptions(&$filter, &$select, &$sort, $raw)
+    {
+	    parent::changeGetListOptions($filter, $select, $sort, $raw);
+
+	    if (isset($filter[$this->getCode()]))
+        {
+	        $filter[$this->getCode()] = '%' . $filter[$this->getCode()] . '%';
+        }
+    }
 }
