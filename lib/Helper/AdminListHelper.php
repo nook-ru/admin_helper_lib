@@ -304,6 +304,7 @@ abstract class AdminListHelper extends AdminBaseHelper
 
 				$this->setContext(AdminListHelper::OP_ADMIN_VARIABLES_FILTER);
 				$filterVarName = 'find_' . $code;
+				\CAdminFilter::UnEscape(array($filterVarName));
 				$this->arFilterFields[] = $filterVarName;
 				$filterType = '';
 
@@ -311,11 +312,11 @@ abstract class AdminListHelper extends AdminBaseHelper
 					$filterType = $settings['FILTER'];
 				}
 
-				if (isset($_REQUEST[$filterVarName])
+				if (isset($GLOBALS[$filterVarName])
 					AND !isset($_REQUEST['del_filter'])
 					AND $_REQUEST['del_filter'] != 'Y'
 				) {
-					$arFilter[$filterType . $code] = $_REQUEST[$filterVarName];
+					$arFilter[$filterType . $code] = $GLOBALS[$filterVarName];
 					$this->filterTypes[$code] = $filterType;
 				}
 
