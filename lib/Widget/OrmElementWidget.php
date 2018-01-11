@@ -25,6 +25,17 @@ Loc::loadMessages(__FILE__);
  */
 class OrmElementWidget extends NumberWidget
 {
+    public function processEditAction()
+    {
+        if (!$this->getSettings('MULTIPLE')) {
+            parent::processEditAction();
+        } else {
+            if (!$this->checkRequired()) {
+                $this->addError('DIGITALWAND_AH_REQUIRED_FIELD_ERROR');
+            }
+        }
+    }
+
     protected static $defaults = array(
         'FILTER' => '=',
         'INPUT_SIZE' => 5,
@@ -76,9 +87,7 @@ class OrmElementWidget extends NumberWidget
      */
     protected function getEditHtmlSelect()
     {
-        /**
-         * @var AdminBaseHelper $linkedHelper
-         */
+        /** @var AdminBaseHelper $linkedHelper */
         $linkedHelper = $this->getSettings('HELPER');
         $inputSize = (int) $this->getSettings('INPUT_SIZE');
         $windowWidth = (int) $this->getSettings('WINDOW_WIDTH');
@@ -90,7 +99,7 @@ class OrmElementWidget extends NumberWidget
         $entityData = $this->getOrmElementData();
 
         if (!empty($entityData)) {
-            $elementId = $entityData['ID'];
+            $elementId = $entityData[$linkedHelper::pk()];
             $elementName = $entityData[$this->getSettings('TITLE_FIELD_NAME')] ?
                 $entityData[$this->getSettings('TITLE_FIELD_NAME')] :
                 Loc::getMessage('IBLOCK_ELEMENT_NOT_FOUND');
@@ -132,8 +141,10 @@ class OrmElementWidget extends NumberWidget
         $elementList = $this->getOrmElementList();
 
         if (!is_null($elementList)) {
+            /** @var \DigitalWand\AdminHelper\Helper\AdminBaseHelper $linkedHelper */
+            $linkedHelper = $this->getSettings('HELPER');
             foreach ($elementList as $key => $element) {
-                $return .= InputType("radio", $this->getEditInputName(), $element['ID'], $this->getValue(), false, $element['TITLE']);
+                $return .= InputType("radio", $this->getEditInputName(), $element[$linkedHelper::pk()], $this->getValue(), false, $element['TITLE']);
             }
         } else {
             $return = Loc::getMessage('DIGITALWAND_AH_ORM_MISSING_ELEMENTS');
@@ -147,9 +158,7 @@ class OrmElementWidget extends NumberWidget
      */
     public function getMultipleEditHtml()
     {
-        /**
-         * @var AdminBaseHelper $linkedHelper
-         */
+        /** @var AdminBaseHelper $linkedHelper */
         $linkedHelper = $this->getSettings('HELPER');
         $inputSize = (int)$this->getSettings('INPUT_SIZE');
         $windowWidth = (int)$this->getSettings('WINDOW_WIDTH');
@@ -171,6 +180,7 @@ class OrmElementWidget extends NumberWidget
             ),
             $this->getSettings('ADDITIONAL_URL_PARAMS')
         ));
+        $popupUrl = str_replace(urlencode('{{field_id}}'), '{{field_id}}', $popupUrl);
 
         ob_start();
         ?>
@@ -195,7 +205,7 @@ class OrmElementWidget extends NumberWidget
             {
                 foreach($entityListData as $referenceData)
                 {
-                    $elementId = $referenceData['ID'];
+            $elementId = $referenceData[$linkedHelper::pk()];
                     $elementName = $referenceData[$this->getSettings('TITLE_FIELD_NAME')] ?
                             $referenceData[$this->getSettings('TITLE_FIELD_NAME')] :
                             Loc::getMessage('IBLOCK_ELEMENT_NOT_FOUND');
@@ -277,9 +287,7 @@ class OrmElementWidget extends NumberWidget
      */
     public function showFilterHtml()
     {
-        /**
-         * @var AdminBaseHelper $linkedHelper
-         */
+        /** @var AdminBaseHelper $linkedHelper */
         $linkedHelper = $this->getSettings('HELPER');
 
         if ($this->getSettings('MULTIPLE')) {
@@ -330,18 +338,24 @@ class OrmElementWidget extends NumberWidget
     {
         $refInfo = array();
         $valueList = null;
-        $linkedModel = $this->getLinkedModel();
+
+        /** @var \DigitalWand\AdminHelper\Helper\AdminBaseHelper $linkedHelper */
+        $linkedHelper = $this->getSettings('HELPER');
+        $linkedModel = $linkedHelper::getModel();
 
         if ($this->getSettings('MULTIPLE')) {
             $entityName = $this->entityName;
 
             $rsMultEntity = $entityName::getList(array(
                 'select' => array('REFERENCE_' => $this->getCode() . '.*'),
-                'filter' => array('=ID' => $this->data['ID'])
+                'filter' => array('=' . $this->getCode() . '.' . $this->getMultipleField('ENTITY_ID') => $this->data[$this->helper->pk()])
             ));
 
             while ($multEntity = $rsMultEntity->fetch()) {
-                $valueList[$multEntity['REFERENCE_VALUE']] = $multEntity['REFERENCE_VALUE'];
+                $valueKey = $this->getMultipleField('VALUE');
+                if (isset($multEntity['REFERENCE_' . $valueKey])) {
+                    $valueList[$multEntity['REFERENCE_' . $valueKey]] = $multEntity['REFERENCE_' . $valueKey];
+                }
             }
         } else {
             $value = $this->getValue();
@@ -352,13 +366,14 @@ class OrmElementWidget extends NumberWidget
         }
 
         if ($valueList) {
+
             $rsEntity = $linkedModel::getList(array(
-                'filter' => array('ID' => $valueList)
+                'filter' => array($linkedHelper::pk() => $valueList)
             ));
 
             while ($entity = $rsEntity->fetch()) {
-                if (in_array($entity['ID'], $valueList)) {
-                    unset($valueList[$entity['ID']]);
+                if (in_array($entity[$linkedHelper::pk()], $valueList)) {
+                    unset($valueList[$entity[$linkedHelper::pk()]]);
                 }
 
                 if ($this->getSettings('MULTIPLE')) {
@@ -371,9 +386,9 @@ class OrmElementWidget extends NumberWidget
 
             foreach ($valueList as $entityId) {
                 if ($this->getSettings('MULTIPLE')) {
-                    $refInfo[] = array('ID' => $entityId);
+                    $refInfo[] = array($linkedHelper::pk() => $entityId);
                 } else {
-                    $refInfo = array('ID' => $entityId);
+                    $refInfo = array($linkedHelper::pk() => $entityId);
                     break;
                 }
             }
@@ -392,14 +407,17 @@ class OrmElementWidget extends NumberWidget
     protected function getOrmElementList()
     {
         $valueList = null;
-        $linkedModel = $this->getLinkedModel();
+
+        /** @var \DigitalWand\AdminHelper\Helper\AdminBaseHelper $linkedHelper */
+        $linkedHelper = $this->getSettings('HELPER');
+        $linkedModel = $linkedHelper::getModel();
 
         $rsEntity = $linkedModel::getList(array(
             'filter' => array(
                 'ACTIVE' => 1
             ),
             'select' => array(
-                'ID',
+                $linkedHelper::pk(),
                 'TITLE'
             )
         ));
@@ -411,18 +429,4 @@ class OrmElementWidget extends NumberWidget
         return $valueList;
     }
 
-    /**
-     * Возвращает связанную модель.
-     *
-     * @return \Bitrix\Main\Entity\DataManager
-     */
-    protected function getLinkedModel()
-    {
-        /**
-         * @var \DigitalWand\AdminHelper\Helper\AdminBaseHelper $linkedHelper
-         */
-        $linkedHelper = $this->getSettings('HELPER');
-
-        return $linkedHelper::getModel();
-    }
 }

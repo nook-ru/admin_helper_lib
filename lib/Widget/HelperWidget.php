@@ -57,7 +57,7 @@ use Bitrix\Main\Entity\DataManager;
  * <li><b>EDIT_IN_LIST</b> - параметр не обрабатывается непосредственно виджетом, однако используется хэлпером.
  *     Указывает, можно ли редактировать данное поле в спискке</li>
  * <li><b>MULTIPLE</b> - bool является ли поле множественным</li>
- * <li><b>MULTIPLE_FIELDS</b> - bool поля используемые в хранилище множественных значений и их алиасы</li>
+ * <li><b>MULTIPLE_FIELDS</b> - array поля используемые в хранилище множественных значений и их алиасы</li>
  * <li><b>LIST</b> - отображать ли поле в списке доступных в настройках столбцов таблицы (по-умолчанию true)</li>
  * <li><b>HEADER</b> - является ли столбец отображаемым по-умолчанию, если вывод столбцов таблицы не настроен (по-умолчанию true)</li>
  * </ul>
@@ -232,7 +232,7 @@ abstract class HelperWidget
      */
     public function showBasicEditField($isPKField)
     {
-        if ($this->getSettings('HIDE_WHEN_CREATE') AND !isset($this->data['ID'])) {
+        if ($this->getSettings('HIDE_WHEN_CREATE') AND !isset($this->data[$this->helper->pk()])) {
             return;
         }
 
@@ -297,11 +297,11 @@ abstract class HelperWidget
     {
         $rsEntityData = null;
         $values = array();
-        if (!empty($this->data['ID'])) {
+        if (!empty($this->data[$this->helper->pk()])) {
             $entityName = $this->entityName;
             $rsEntityData = $entityName::getList(array(
                 'select' => array('REFERENCE_' => $this->getCode() . '.*'),
-                'filter' => array('=ID' => $this->data['ID'])
+                'filter' => array('=ID' => $this->data[$this->helper->pk()])
             ));
 
             if ($rsEntityData) {
@@ -814,7 +814,7 @@ abstract class HelperWidget
      */
     protected function getEditableListInputName()
     {
-        $id = $this->data['ID'];
+        $id = $this->data[$this->helper->pk()];
 
         return 'FIELDS[' . $id . '][' . $this->getCode() . ']';
     }
