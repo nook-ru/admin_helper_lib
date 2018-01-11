@@ -173,6 +173,10 @@ abstract class AdminEditHelper extends AdminBaseHelper
 				}
 			}
 
+			if (!in_array($this->pk(), $select)) {
+				$select[] = $this->pk();
+			}
+
 			$this->data = $this->loadElement($select);
 
 			$id = isset($_REQUEST[$this->pk()]) ? $_REQUEST[$this->pk()] : null;
