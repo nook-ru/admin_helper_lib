@@ -988,6 +988,15 @@ abstract class AdminListHelper extends AdminBaseHelper
 		$this->list->AddGroupActionTable($this->getGroupActions(), $this->groupActionsParams);
 		$this->list->AddAdminContextMenu($this->getContextMenu(), $this->exportExcel);
 
+		// выводим сообщения для режимов list и frame
+		$notes = $this->getNotes();
+		if(in_array($_GET['mode'], array('list','frame')) && is_array($notes)) {
+			$noteText = implode("\n\n", $notes);
+			ob_start();
+			\CAdminMessage::ShowNote($noteText);
+			$this->prologHtml .= ob_get_clean();
+		}
+
 		$this->list->BeginPrologContent();
 		echo $this->prologHtml;
 		$this->list->EndPrologContent();
