@@ -70,6 +70,11 @@ abstract class AdminListHelper extends AdminBaseHelper
 	protected $sectionFields = array();
 	/**
 	 * @var string
+	 * Название столбца, в котором хранится ID элемента
+	 */
+	protected $fieldPopupResultElId = '';
+	/**
+	 * @var string
 	 * Название столбца, в котором хранится название элемента
 	 */
 	protected $fieldPopupResultElTitle = '';
@@ -175,7 +180,8 @@ abstract class AdminListHelper extends AdminBaseHelper
 		if ($this->isPopup) {
 			$this->fieldPopupResultName = preg_replace("/[^a-zA-Z0-9_:\\[\\]]/", "", $_REQUEST['n']);
 			$this->fieldPopupResultIndex = preg_replace("/[^a-zA-Z0-9_:]/", "", $_REQUEST['k']);
-			$this->fieldPopupResultElTitle = $_REQUEST['eltitle'];
+			$this->fieldPopupResultElId = $_REQUEST['elid'] ?: 'ID';
+			$this->fieldPopupResultElTitle = $_REQUEST['eltitle'] ?: 'NAME';
 		}
 
 		parent::__construct($fields);
@@ -787,7 +793,7 @@ abstract class AdminListHelper extends AdminBaseHelper
 					input = window.opener.document.getElementById("' . $this->fieldPopupResultName . '");
 				if(input)
 				{
-					input.value = data.ID;
+					input.value = data.' . $this->fieldPopupResultElId . ';
 					if (window.opener.BX)
 						window.opener.BX.fireEvent(input, "change");
 				}
