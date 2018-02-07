@@ -217,11 +217,19 @@ class StringWidget extends HelperWidget
         }
     }
 
-    public function changeGetListOptions(&$filter, &$select, &$sort, $raw)
+    protected function isFilterOccurence()
+    {
+        return $this->getSettings('FILTER') === '%';
+    }
+
+	public function changeGetListOptions(&$filter, &$select, &$sort, $raw)
     {
 	    parent::changeGetListOptions($filter, $select, $sort, $raw);
 
-	    if (isset($filter[$this->getCode()]))
+	    /**
+	     * Нужно проверять тип фильтра, NumberWidget наследуется от этого класса, но там тип фильтра другой
+	     */
+	    if ($this->isFilterOccurence() && isset($filter[$this->getCode()]))
         {
 	        $filter[$this->getCode()] = '%' . $filter[$this->getCode()] . '%';
         }
