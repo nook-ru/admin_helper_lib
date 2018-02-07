@@ -177,6 +177,11 @@ abstract class AdminEditHelper extends AdminBaseHelper
 				$select[] = $this->pk();
 			}
 
+			foreach ($helperFields as $code => $settings) {
+				$widget = $this->createWidgetForField($code);
+				$widget->changeGetListOptions($f = array(), $select, $s = array(), array());
+			}
+
 			$this->data = $this->loadElement($select);
 
 			$id = isset($_REQUEST[$this->pk()]) ? $_REQUEST[$this->pk()] : null;
@@ -500,6 +505,11 @@ abstract class AdminEditHelper extends AdminBaseHelper
 	{
 		if ($this->getPk() !== null) {
 			$className = static::getModel();
+			if (is_array($select))
+			{
+				$select[] = $this->pk();
+				$select = array_unique($select);
+			}
 			$result = $className::getList(array(
 				'filter' => array(
 					$this->pk() => $this->getPk()
