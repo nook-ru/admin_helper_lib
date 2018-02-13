@@ -162,10 +162,14 @@ class StringWidget extends HelperWidget
                 if ($this->getSettings('SECTION_LINK')) {
                     $params = $this->helper->isPopup() ? $_GET : array();
                     $params['ID'] = $this->data[$pk];
-                    $listHelper = $this->helper->getHelperClass($this->helper->isPopup() ? AdminSectionListHelper::className() : AdminListHelper::className());
-                    $pageUrl = $listHelper::getUrl($params);
+                    $listHelper = $this->helper->getHelperClass(AdminListHelper::className());
+                    $pageUrl = 'javascript:' . $this->helper->getList()->ActionAjaxReload($listHelper::getUrl($params));
                     $value = '<span class="adm-submenu-item-link-icon adm-list-table-icon iblock-section-icon"></span>';
-                } else {
+                } elseif ($this->helper->isPopup()) {
+                    $pageUrl = $this->helper->getPopupAction($this->data);
+                }
+                else
+                {
                     $editHelper = $this->helper->getHelperClass(AdminEditHelper::className());
                     $pageUrl = $editHelper::getUrl(array(
                         'ID' => $this->data[$pk]

@@ -502,7 +502,7 @@ abstract class AdminListHelper extends AdminBaseHelper
 			}
 			unset($params['SECTION_ID']);
 			$contextMenu[] = $this->getButton('LIST_SECTION_UP', array(
-				'LINK' => static::getUrl($params),
+				'LINK' => 'javascript:' . $this->list->ActionAjaxReload(static::getUrl($params)),
 				'ICON' => 'btn_list'
 			));
 		}
@@ -807,6 +807,12 @@ abstract class AdminListHelper extends AdminBaseHelper
 				window.close();
 			}
 		</script>';
+	}
+
+	public function getPopupAction($data)
+	{
+		$jsData = \CUtil::PhpToJSObject($data);
+		return 'javascript:' . $this->popupClickFunctionName . '(' . $jsData . ')';
 	}
 
 	/**
@@ -1400,12 +1406,11 @@ abstract class AdminListHelper extends AdminBaseHelper
 		$actions = array();
 
 		if ($this->isPopup()) {
-			$jsData = \CUtil::PhpToJSObject($data);
 			$actions['select'] = array(
 				'ICON' => 'select',
 				'DEFAULT' => true,
 				'TEXT' => Loc::getMessage('DIGITALWAND_ADMIN_HELPER_LIST_SELECT'),
-				"ACTION" => 'javascript:' . $this->popupClickFunctionName . '(' . $jsData . ')'
+				"ACTION" => $this->getPopupAction($data),
 			);
 		}
 		else {
@@ -1705,5 +1710,13 @@ abstract class AdminListHelper extends AdminBaseHelper
 		$key[$this->pk()] = $id;
 
 		return $key;
+	}
+
+	/**
+	 * @return \CAdminList
+	 */
+	public function getList()
+	{
+		return $this->list;
 	}
 }
