@@ -233,12 +233,15 @@ class OrmElementWidget extends NumberWidget
     {
         $entityData = $this->getOrmElementData();
 
-        if (!empty($entityData)) {
+	    /** @var \DigitalWand\AdminHelper\Helper\AdminBaseHelper $linkedHelper */
+	    $linkedHelper = $this->getSettings('HELPER');
+
+	    if (!empty($entityData)) {
             $entityName = $entityData[$this->getSettings('TITLE_FIELD_NAME')] ?
                 $entityData[$this->getSettings('TITLE_FIELD_NAME')] :
                 Loc::getMessage('IBLOCK_ELEMENT_NOT_FOUND');
 
-            return '[' . $entityData['ID'] . ']' . static::prepareToOutput($entityName);
+            return '[' . $entityData[$linkedHelper::pk()] . '] ' . static::prepareToOutput($entityName);
         }
 
         return '';

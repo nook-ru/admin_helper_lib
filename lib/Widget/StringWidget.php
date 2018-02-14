@@ -71,12 +71,14 @@ class StringWidget extends HelperWidget
         $uniqueId = $this->getEditInputHtmlId();
 
         $rsEntityData = null;
+	    $helper = $this->helper;
+	    $pk = $helper::pk();
 
-        if (!empty($this->data['ID'])) {
+        if (!empty($this->data[$helper::pk()])) {
             $entityName = $this->entityName;
             $rsEntityData = $entityName::getList(array(
                 'select' => array('REFERENCE_' => $this->getCode() . '.*'),
-                'filter' => array('=ID' => $this->data['ID'])
+                'filter' => array('=' . $pk => $this->data[$pk])
             ));
         }
 
@@ -96,7 +98,7 @@ class StringWidget extends HelperWidget
             {
                 while($referenceData = $rsEntityData->fetch())
                 {
-                    if (empty($referenceData['REFERENCE_' . $this->getMultipleField('ID')]))
+                    if (empty($referenceData['REFERENCE_' . $this->getMultipleField($pk)]))
                     {
                         continue;
                     }
@@ -104,9 +106,9 @@ class StringWidget extends HelperWidget
                     ?>
             multiple.addField({
                 value: '<?= static::prepareToJs($referenceData['REFERENCE_' . $this->getMultipleField('VALUE')]) ?>',
-                field_original_id: '<input type="hidden" name="<?= $this->getCode()?>[{{field_id}}][<?= $this->getMultipleField('ID') ?>]"' +
-                ' value="<?= $referenceData['REFERENCE_' . $this->getMultipleField('ID')] ?>">',
-                field_id: <?= $referenceData['REFERENCE_' . $this->getMultipleField('ID')] ?>
+                field_original_id: '<input type="hidden" name="<?= $this->getCode()?>[{{field_id}}][<?= $this->getMultipleField($pk) ?>]"' +
+                ' value="<?= $referenceData['REFERENCE_' . $this->getMultipleField($pk)] ?>">',
+                field_id: <?= $referenceData['REFERENCE_' . $this->getMultipleField($pk)] ?>
             });
             <?
                            }
@@ -122,12 +124,15 @@ class StringWidget extends HelperWidget
 
     protected function getMultipleValueReadonly()
     {
+        $helper = $this->helper;
+        $pk = $helper::pk();
+
         $rsEntityData = null;
-        if (!empty($this->data['ID'])) {
+        if (!empty($this->data[$this->helper->pk()])) {
             $entityName = $this->entityName;
             $rsEntityData = $entityName::getList(array(
                 'select' => array('REFERENCE_' => $this->getCode() . '.*'),
-                'filter' => array('=ID' => $this->data['ID'])
+                'filter' => array('=' . $pk => $this->data[$this->helper->pk()])
             ));
         }
 
@@ -157,11 +162,12 @@ class StringWidget extends HelperWidget
         if ($this->getSettings('MULTIPLE')) {
         } else {
             if ($this->getSettings('EDIT_LINK') || $this->getSettings('SECTION_LINK')) {
-                $pk = $this->helper->pk();
+                $helper = $this->helper;
+                $pk = $helper::pk();
 
                 if ($this->getSettings('SECTION_LINK')) {
                     $params = $this->helper->isPopup() ? $_GET : array();
-                    $params['ID'] = $this->data[$pk];
+                    $params[$pk] = $this->data[$pk];
                     $listHelper = $this->helper->getHelperClass(AdminListHelper::className());
                     $pageUrl = 'javascript:' . $this->helper->getList()->ActionAjaxReload($listHelper::getUrl($params));
                     $value = '<span class="adm-submenu-item-link-icon adm-list-table-icon iblock-section-icon"></span>';
@@ -172,7 +178,7 @@ class StringWidget extends HelperWidget
                 {
                     $editHelper = $this->helper->getHelperClass(AdminEditHelper::className());
                     $pageUrl = $editHelper::getUrl(array(
-                        'ID' => $this->data[$pk]
+	                    $pk => $this->data[$pk]
                     ));
                 }
 
