@@ -15,13 +15,9 @@ matrix:
 before_install:
   # PHP 5.3+: set up test environment using Composer.
   - composer self-update
-  - composer require wimg/php-compatibility --dev --prefer-dist
+  - composer install --dev
 
 before_script:
-  # Install "PHPCompatibility coding standard" in PHP_CodeSniffer
-  # there is an issue with composer installation https://github.com/wimg/PHPCompatibility/issues/102
-  - mkdir --parents vendor/squizlabs/php_codesniffer/CodeSniffer/Standards/PHPCompatibility
-  - cp -R vendor/wimg/php-compatibility/* vendor/squizlabs/php_codesniffer/CodeSniffer/Standards/PHPCompatibility
   - sed -i "s/short_open_tag = .*/short_open_tag = On/" ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 script:
