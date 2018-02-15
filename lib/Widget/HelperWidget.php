@@ -1006,6 +1006,7 @@ abstract class HelperWidget
                     $.each(data, function (key, value) {
                         // Подставление значений переменных
                         fieldTemplate = fieldTemplate.replace(new RegExp('\{\{' + key + '\}\}', ['g']), value);
+                        fieldTemplate = fieldTemplate.replace(new RegExp(encodeURIComponent('\{\{' + key + '\}\}'), ['g']), value);
                     });
 
                     // Удаление из шаблона необработанных переменных

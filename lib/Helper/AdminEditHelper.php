@@ -373,6 +373,9 @@ abstract class AdminEditHelper extends AdminBaseHelper
 	{
 		$this->setContext(AdminEditHelper::OP_SHOW_TAB_ELEMENTS);
 		$this->tabControl->BeginNextFormTab();
+		/** @var DataManager $model */
+		$model = $this->getModel();
+		$autoInrementField = $model::getEntity()->getAutoIncrement();
 
 		foreach ($this->getFields() as $code => $fieldSettings) {
 			$widget = $this->createWidgetForField($code, $this->data);
@@ -390,8 +393,8 @@ abstract class AdminEditHelper extends AdminBaseHelper
 			}
 
 			$this->tabControl->BeginCustomField($code, $widget->getSettings('TITLE'));
-			$pkField = ($code == $this->pk());
-			$widget->showBasicEditField($pkField);
+			$isAutoInrement = $code === $autoInrementField;
+			$widget->showBasicEditField($isAutoInrement);
 			$this->tabControl->EndCustomField($code);
 		}
 	}

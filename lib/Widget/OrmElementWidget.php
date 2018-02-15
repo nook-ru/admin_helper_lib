@@ -27,12 +27,8 @@ class OrmElementWidget extends NumberWidget
 {
     public function processEditAction()
     {
-        if (!$this->getSettings('MULTIPLE')) {
-            parent::processEditAction();
-        } else {
-            if (!$this->checkRequired()) {
-                $this->addError('DIGITALWAND_AH_REQUIRED_FIELD_ERROR');
-            }
+        if (!$this->checkRequired()) {
+            $this->addError('DIGITALWAND_AH_REQUIRED_FIELD_ERROR');
         }
     }
 
@@ -434,5 +430,4 @@ class OrmElementWidget extends NumberWidget
 
         return $valueList;
     }
-
 }
