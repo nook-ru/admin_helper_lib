@@ -110,6 +110,7 @@ class OrmElementWidget extends NumberWidget
         $popupUrl = $linkedHelper::getUrl(array_merge(
             array(
                 'popup' => 'Y',
+	            'elid' => $linkedHelper::pk(),
                 'eltitle' => $this->getSettings('TITLE_FIELD_NAME'),
                 'n' => $name,
                 'k' => $key
@@ -174,6 +175,7 @@ class OrmElementWidget extends NumberWidget
         $popupUrl = $linkedHelper::getUrl(array_merge(
             array(
                 'popup' => 'Y',
+                'elid' => $linkedHelper::pk(),
                 'eltitle' => $this->getSettings('TITLE_FIELD_NAME'),
                 'n' => $name,
                 'k' => '{{field_id}}'
@@ -309,6 +311,7 @@ class OrmElementWidget extends NumberWidget
             $popupUrl = $linkedHelper::getUrl(array_merge(
                 array(
                     'popup' => 'Y',
+	                'elid' => $linkedHelper::pk(),
                     'eltitle' => $this->getSettings('TITLE_FIELD_NAME'),
                     'n' => $name,
                     'k' => $key
