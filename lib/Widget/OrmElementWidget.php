@@ -291,43 +291,39 @@ class OrmElementWidget extends NumberWidget
         /** @var AdminBaseHelper $linkedHelper */
         $linkedHelper = $this->getSettings('HELPER');
 
-        if ($this->getSettings('MULTIPLE')) {
+        $inputSize = (int) $this->getSettings('INPUT_SIZE');
+        $windowWidth = (int) $this->getSettings('WINDOW_WIDTH');
+        $windowHeight = (int) $this->getSettings('WINDOW_HEIGHT');
 
-        } else {
-            $inputSize = (int) $this->getSettings('INPUT_SIZE');
-            $windowWidth = (int) $this->getSettings('WINDOW_WIDTH');
-            $windowHeight = (int) $this->getSettings('WINDOW_HEIGHT');
+        $name = 'FIND';
+        $key = $this->getCode();
 
-            $name = 'FIND';
-            $key = $this->getCode();
+        print '<tr>';
+        print '<td>' . $this->getSettings('TITLE') . '</td>';
 
-            print '<tr>';
-            print '<td>' . $this->getSettings('TITLE') . '</td>';
+        $popupUrl = $linkedHelper::getUrl(array_merge(
+            array(
+                'popup' => 'Y',
+                'elid' => $linkedHelper::pk(),
+                'eltitle' => $this->getSettings('TITLE_FIELD_NAME'),
+                'n' => $name,
+                'k' => $key
+            ),
+            $this->getSettings('ADDITIONAL_URL_PARAMS')
+        ));
 
-            $popupUrl = $linkedHelper::getUrl(array_merge(
-                array(
-                    'popup' => 'Y',
-	                'elid' => $linkedHelper::pk(),
-                    'eltitle' => $this->getSettings('TITLE_FIELD_NAME'),
-                    'n' => $name,
-                    'k' => $key
-                ),
-                $this->getSettings('ADDITIONAL_URL_PARAMS')
-            ));
+        $editStr = '<input name="' . $this->getFilterInputName() . '"
+                 id="' . $name . '[' . $key . ']"
+                 value="' . $this->getCurrentFilterValue() . '"
+                 size="' . $inputSize . '"
+                 type="text">' .
+            '<input type="button"
+                value="..."
+                onClick="jsUtils.OpenWindow(\'' . $popupUrl . '\', ' . $windowWidth . ', ' . $windowHeight . ');">';
 
-            $editStr = '<input name="' . $this->getFilterInputName() . '"
-                     id="' . $name . '[' . $key . ']"
-                     value="' . $this->getCurrentFilterValue() . '"
-                     size="' . $inputSize . '"
-                     type="text">' .
-                '<input type="button"
-                    value="..."
-                    onClick="jsUtils.OpenWindow(\'' . $popupUrl . '\', ' . $windowWidth . ', ' . $windowHeight . ');">';
+        print '<td>' . $editStr . '</td>';
 
-            print '<td>' . $editStr . '</td>';
-
-            print '</tr>';
-        }
+        print '</tr>';
     }
 
     /**
