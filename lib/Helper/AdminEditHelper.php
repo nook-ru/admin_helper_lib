@@ -139,7 +139,7 @@ abstract class AdminEditHelper extends AdminBaseHelper
 				}
 			}
 			else {
-				if (isset($this->data[$this->pk()])) {
+				if (!empty($this->data[$this->pk()])) {
 					$id = $this->data[$this->pk()];
 					$url = $this->app->GetCurPageParam($this->pk() . '=' . $id);
 				}
